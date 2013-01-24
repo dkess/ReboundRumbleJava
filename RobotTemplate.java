@@ -27,7 +27,7 @@ public class RobotTemplate extends IterativeRobot {
 	VictorPair ingest;
 	Victor elevator;
 	VictorPair shooter;
-	RobotDrive robotDrive;
+	RobotDrivePlus robotDrive;
 	JStick xbox;
 	JStick joystick;
 	Compressor compressor;
@@ -53,7 +53,8 @@ public class RobotTemplate extends IterativeRobot {
 
 		shooter = new VictorPair(2,4);
 
-		robotDrive = new RobotDrive(8, 7, 10, 9);
+		robotDrive = new RobotDrivePlus(8, 7, 10, 9);
+		robotDrive.setJitterRange(0.0001);
 		xbox = new JStick(1,10,6);
 		joystick = new JStick(2,11,3);
 		compressor = new Compressor(4, 3);
@@ -118,111 +119,12 @@ public class RobotTemplate extends IterativeRobot {
 		double leftStickY = xbox.getAxis(JStick.XBOX_LSY);
 		double rightStickY = xbox.getAxis(JStick.XBOX_RSY);
 
-		// comment
-		lspeed = Math.abs(leftStickY) >= 0.001 ? leftStickY : 0;
-		rspeed = Math.abs(rightStickY) >= 0.001 ? rightStickY : 0;
-
-		double trigger = xbox.getAxis(JStick.XBOX_TRIG);
-
-		if (Math.abs(trigger) > 0.0001) {
-			if (trigger > 0.0001) {
-				lspeed = rspeed = MathUtils.pow(1.8, trigger) - 0.8;
-				goingBack = false;
-			} else if (trigger < -0.0001) {
-				lspeed = rspeed = MathUtils.pow(1.8, Math.abs(trigger)) - 0.8;
-				goingBack = true;
-			}
-			if (goingStraight) {
-				deltaR = rightEnc.getRaw() - rightEncInitial;
-				deltaL = leftEnc.getRaw() - leftEncInitial;
-				if (deltaR > deltaL) {
-					lcd.println(DriverStationLCD.Line.kUser2, 3,
-							"inreasing l");
-					if (goingBack) {
-						// rspeed += (deltaR-deltaL)*0.02;
-					} else {
-						// lspeed += (deltaR-deltaL)*0.02;
-					}
-				} else {
-					lcd.println(DriverStationLCD.Line.kUser2, 3,
-							"inreasing r");
-					if (goingBack) {
-						// lspeed += (deltaL-deltaR)*0.02;
-					} else {
-						// rspeed += (deltaL-deltaR)*0.02;
-					}
-				}
-				if (lspeed > 1) {
-					rspeed -= (lspeed - 1);
-				}
-				if (rspeed > 1) {
-					lspeed -= (rspeed - 1);
-				}
-				if (goingBack) {
-					rspeed = -rspeed;
-					lspeed = -lspeed;
-				}
-			} else {
-				goingStraight = true;
-				leftEncInitial = leftEnc.getRaw();
-				rightEncInitial = rightEnc.getRaw();
-			}
-		} else {
-			goingStraight = false;
-			lcd.println(DriverStationLCD.Line.kUser2, 1, "DL:" + deltaL
-					+ " DR:" + deltaR);
-		}
-
-		// cheesy drive
-
-		if (lspeed > 1) {
-			lspeed = 1;
-		} else if (lspeed < -1) {
-			lspeed = -1;
-		}
-
-		if (rspeed > 1) {
-			rspeed = 1;
-		} else if (rspeed < -1) {
-			rspeed = -1;
-		}
-
-		double angular_power = 0;
-		double overPower = 0.0;
-		double sensitivity = 1.25;
-		double rPower = 0;
-		double lPower = 0;
-
-		if (xbox.isPressed(JStick.XBOX_X)) {
-			overPower = 1;
-			sensitivity = 1;
-			angular_power = -leftStickX;
-		} else {
-			overPower = 0;
-			angular_power = rightStickY * leftStickX * sensitivity;
-		}
-		rPower = lPower = rightStickY;
-		lPower += angular_power;
-		rPower -= angular_power;
-
-		if (lPower > 1) {
-			rPower -= overPower * (lPower - 1);
-			lPower = 1;
-		} else if (rPower > 1) {
-			lPower -= overPower * (rPower - 1);
-			rPower = 1;
-		} else if (lPower < -1) {
-			rPower += overPower * (-1 - lPower);
-			lPower = -1;
-		} else if (rPower < -1) {
-			lPower += overPower * (-1 - rPower);
-			rPower = -1;
-		}
-
 		if (cheesyDrive) {
-			robotDrive.tankDrive(lPower, rPower);
+			robotDrive.cheesyDrive(rightStickY, leftStickX, xbox.isPressed(JStick.XBOX_X));
 		} else {
-			robotDrive.tankDrive(lspeed, rspeed);
+			if (!robotDrive.straightDrive(xbox.getAxis(JStick.XBOX_TRIG))) {
+				robotDrive.jitTankDrive(leftStickY, rightStickY);
+			}
 		}
 
 		/*
