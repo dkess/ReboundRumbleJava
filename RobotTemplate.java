@@ -9,13 +9,10 @@ package edu.wpi.first.wpilibj.templates;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
-import com.sun.squawk.util.MathUtils;
 
-//import java.lang.*;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the SimpleRobot
@@ -93,10 +90,12 @@ public class RobotTemplate extends IterativeRobot {
 		xbox.update();
 		joystick.update();
 
+		// Press A to toggle cheesy drive
 		if (xbox.isReleased(JStick.XBOX_A)) {
 			cheesyDrive = !cheesyDrive;
 		}
 
+		// Use RB and LB to change gears
 		if (xbox.isReleased(JStick.XBOX_RB) && driveGearA.get()) {
 			driveGearA.set(false);
 			driveGearB.set(true);
@@ -106,15 +105,20 @@ public class RobotTemplate extends IterativeRobot {
 			driveGearB.set(false);
 			selectedGear = 1;
 		}
-
+	
+		// if joystick button 2 is pressed, run the ingestor
 		ingest.setAsBool(joystick.isPressed(2), true);
 
+		// if joystick button 2 is pressed, run the elevator backwards
+		// otherwise if joystick button 1 is pressed, run the elevator
+		// forwards
 		elevator.set(joystick.isPressed(2) ? -0.75 :
 					(joystick.isPressed(1) ? 0.75 : 0));
 
+		// if button 3 is pressed, run the shooter
+		// based on what the knob value is
 		shooter.checkAndSet(joystick.isPressed(3), -(joystick.getAxis(JStick.JOYSTICK_KNOB) - 1) / 2);
 
-		double lspeed, rspeed;
 		double leftStickX = xbox.getAxis(JStick.XBOX_LSX);
 		double leftStickY = xbox.getAxis(JStick.XBOX_LSY);
 		double rightStickY = xbox.getAxis(JStick.XBOX_RSY);
