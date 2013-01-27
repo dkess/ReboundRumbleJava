@@ -1,7 +1,8 @@
 package edu.wpi.first.wpilibj.templates;
 
-import edu.wpi.first.wpilibj.RobotDrive;
 import com.sun.squawk.util.MathUtils;
+import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.RobotDrive;
 
 public class RobotDrivePlus extends RobotDrive {
 	private double jitterRange;
@@ -19,17 +20,26 @@ public class RobotDrivePlus extends RobotDrive {
 	public void setStraightExp(double a) {
 		straightExp = a;
 	}
-
-	public boolean straightDrive(double power) {
+	
+	public boolean straightDrive(double power, double leftRate, double rightRate) {
+		double kp = Preferences.getInstance().getDouble("kp", 0.1);
 		if (Math.abs(power) > jitterRange) {
-			double speed = 0;
+			double lspeed, rspeed;
+			lspeed = rspeed = 0;
+			
 			if (power > 0) {
-				speed = MathUtils.pow(1+straightExp, power) - straightExp;
+				lspeed = MathUtils.pow(1+straightExp, power) - straightExp;
 			} else if (power < 0) {
-				speed = -(MathUtils.pow(1+straightExp, Math.abs(power)) - straightExp);
+				lspeed = -(MathUtils.pow(1+straightExp, Math.abs(power)) - straightExp);
+			}
+			rspeed = lspeed;
+			if (Math.abs(leftRate) > Math.abs(rightRate)) {
+				lspeed -= (leftRate-rightRate)*kp;
+			} else {
+				rspeed -= (rightRate-leftRate)*kp;
 			}
 
-			tankDrive(speed,speed);
+			tankDrive(lspeed,rspeed);
 			return true;
 		} else {
 			return false;
@@ -37,7 +47,7 @@ public class RobotDrivePlus extends RobotDrive {
 	}
 
 	public boolean cheesyDrive(double power, double turn, boolean spin) {
-		if (Math.abs(power) > jitterRange || Math.abs(turn) > jitterRange) {
+		if (Math.abs(power) < jitterRange && Math.abs(turn) < jitterRange) {
 			return false;
 		}
 		double angular_power = 0;
@@ -78,11 +88,19 @@ public class RobotDrivePlus extends RobotDrive {
 	}
 
 	public boolean jitTankDrive(double leftValue, double rightValue) {
-		if (Math.abs(leftValue) > jitterRange || Math.abs(rightValue) > jitterRange) {
+		if (Math.abs(leftValue) < jitterRange && Math.abs(rightValue) < jitterRange) {
 			return false;
 		}
+		
 		tankDrive(leftValue, rightValue);
 		return true;
+	}
+	
+	public double getLeft() {
+		return (m_frontLeftMotor.get() + m_rearLeftMotor.get())/2;
+	}
+	public double getRight() {
+		return (m_frontRightMotor.get() + m_rearRightMotor.get())/2;
 	}
 
 	public RobotDrivePlus(int arg0, int arg1, int arg2, int arg3) {

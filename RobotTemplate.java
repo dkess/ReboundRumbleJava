@@ -7,11 +7,14 @@
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DriverStationLCD;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -51,7 +54,8 @@ public class RobotTemplate extends IterativeRobot {
 		shooter = new VictorPair(2,4);
 
 		robotDrive = new RobotDrivePlus(8, 7, 10, 9);
-		robotDrive.setJitterRange(0.0001);
+		robotDrive.setJitterRange(0.01);
+		robotDrive.setStraightExp(0.8);
 		xbox = new JStick(1,10,6);
 		joystick = new JStick(2,11,3);
 		compressor = new Compressor(4, 3);
@@ -63,10 +67,10 @@ public class RobotTemplate extends IterativeRobot {
 		driveGearB.set(false);
 		selectedGear = 1;
 
-		leftEnc = new Encoder(6, 7, false);
+		leftEnc = new Encoder(6, 7, true,CounterBase.EncodingType.k2X);
 		leftEnc.setDistancePerPulse(0.103672558);
 
-		rightEnc = new Encoder(8, 9, false);
+		rightEnc = new Encoder(9, 10, false);
 		rightEnc.setDistancePerPulse(0.103672558);
 
 		lcd = DriverStationLCD.getInstance();
@@ -118,16 +122,31 @@ public class RobotTemplate extends IterativeRobot {
 		// if button 3 is pressed, run the shooter
 		// based on what the knob value is
 		shooter.checkAndSet(joystick.isPressed(3), -(joystick.getAxis(JStick.JOYSTICK_KNOB) - 1) / 2);
+		
+		// if the y button is pressed, reset the encoders
+		if (xbox.isReleased(JStick.XBOX_Y)) {
+			leftEnc.reset();
+			rightEnc.reset();
+		}
 
 		double leftStickX = xbox.getAxis(JStick.XBOX_LSX);
 		double leftStickY = xbox.getAxis(JStick.XBOX_LSY);
 		double rightStickY = xbox.getAxis(JStick.XBOX_RSY);
 
 		if (cheesyDrive) {
-			robotDrive.cheesyDrive(rightStickY, leftStickX, xbox.isPressed(JStick.XBOX_X));
+			robotDrive.cheesyDrive(rightStickY, leftStickX, xbox.isPressed(JStick.XBOX_LJ));
+			lcd.println(DriverStationLCD.Line.kUser4,1,"cheesy");
 		} else {
-			if (!robotDrive.straightDrive(xbox.getAxis(JStick.XBOX_TRIG))) {
-				robotDrive.jitTankDrive(leftStickY, rightStickY);
+			if (!robotDrive.straightDrive(xbox.getAxis(JStick.XBOX_TRIG),leftEnc.getRate(),rightEnc.getRate())) {
+				if(robotDrive.jitTankDrive(leftStickY, rightStickY)) {
+					lcd.println(DriverStationLCD.Line.kUser4,1,"jitTank");
+				} else {
+					lcd.println(DriverStationLCD.Line.kUser4,1,"failed tank");
+				}
+				lcd.println(DriverStationLCD.Line.kUser5,1,""+leftStickY);
+				lcd.println(DriverStationLCD.Line.kUser6,1,""+rightStickY);
+			} else {
+				lcd.println(DriverStationLCD.Line.kUser4,1,"straightDrive");
 			}
 		}
 
@@ -164,20 +183,30 @@ public class RobotTemplate extends IterativeRobot {
 		lcd.println(DriverStationLCD.Line.kUser6, 1,
 				"Knob " + (-(joystick.getRawAxis(JOYSTICK_KNOB) - 1) / 2));
 		*/
-		lcd.println(DriverStationLCD.Line.kUser1, 1,
-				"" + elevator.get());
-		lcd.println(DriverStationLCD.Line.kUser2, 1,
-				"" + shooter.getA());
+		/*
+		lcd.println(DriverStationLCD.Line.kUser1, 1, "" + elevator.get());
+		lcd.println(DriverStationLCD.Line.kUser2, 1, "" + shooter.getA());
 		lcd.println(DriverStationLCD.Line.kUser3, 1, cheesyDrive ? "cheesy" : "tank");
 		// lcd.println(DriverStationLCD.Line.kUser3, 1,
 		// ""+elevatorVictorA.get());
-		lcd.println(DriverStationLCD.Line.kUser4, 1,
-				"" + shooter.getB());
-		lcd.println(DriverStationLCD.Line.kUser5, 1,
-				"" + ingest.getA());
-		lcd.println(DriverStationLCD.Line.kUser6, 1,
-				"" + ingest.getB());
+		lcd.println(DriverStationLCD.Line.kUser4, 1, "" + shooter.getB());
+		lcd.println(DriverStationLCD.Line.kUser5, 1, "" + ingest.getA());
+		lcd.println(DriverStationLCD.Line.kUser6, 1, "" + ingest.getB());
+		*/
+		lcd.println(DriverStationLCD.Line.kUser1, 1, ""+xbox.getAxis(JStick.XBOX_LSY));
+		lcd.println(DriverStationLCD.Line.kUser2, 1, ""+xbox.getAxis(JStick.XBOX_RSY));
+		lcd.println(DriverStationLCD.Line.kUser3, 1, ""+Preferences.getInstance().getKeys());
+		
+		SmartDashboard.putNumber("LPower", robotDrive.getLeft());
+		SmartDashboard.putNumber("RPower", robotDrive.getRight());
+		SmartDashboard.putNumber("LEncRaw", leftEnc.get());
+		SmartDashboard.putNumber("REncRaw", rightEnc.get());
+		SmartDashboard.putNumber("LEncDist", leftEnc.getDistance());
+		SmartDashboard.putNumber("REncDist", rightEnc.getDistance());
+		SmartDashboard.putNumber("LEncRate", leftEnc.getRate());
+		SmartDashboard.putNumber("REncRate", rightEnc.getRate());
 		/*
+		* 
 		 * lcd.println(DriverStationLCD.Line.kUser1, 1, "" +
 		 * xbox.getRawAxis(XBOX_LSX) + "," + xbox.getRawAxis(XBOX_LSY));
 		 * lcd.println(DriverStationLCD.Line.kUser2, 1, "" +
@@ -185,7 +214,7 @@ public class RobotTemplate extends IterativeRobot {
 		 * lcd.println(DriverStationLCD.Line.kUser3, 1, "" +
 		 * xbox.getRawAxis(XBOX_TRIG));
 		 * lcd.println(DriverStationLCD.Line.kUser4, 1, "" +
-		 * (xbox.getRawButton(XBOX_A) ? "A" : " ") +
+		 * (xbox.getRawButton(XBOX_A) ? "A" : " ") +,
 		 * (xbox.getRawButton(XBOX_B) ? "B" : " ") +
 		 * (xbox.getRawButton(XBOX_X) ? "X" : " ") +
 		 * (xbox.getRawButton(XBOX_Y) ? "Y" : " ") +
