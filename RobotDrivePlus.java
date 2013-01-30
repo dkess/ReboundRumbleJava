@@ -27,12 +27,7 @@ public class RobotDrivePlus extends RobotDrive {
 			double lspeed, rspeed;
 			lspeed = rspeed = 0;
 			
-			if (power > 0) {
-				lspeed = MathUtils.pow(1+straightExp, power) - straightExp;
-			} else if (power < 0) {
-				lspeed = -(MathUtils.pow(1+straightExp, Math.abs(power)) - straightExp);
-			}
-			rspeed = lspeed;
+			rspeed = lspeed = curveInput(power,2);
 			if (Math.abs(leftRate) > Math.abs(rightRate)) {
 				lspeed -= (leftRate-rightRate)*kp;
 			} else {
@@ -46,10 +41,15 @@ public class RobotDrivePlus extends RobotDrive {
 		}
 	}
 
+	double old_turn;
 	public boolean cheesyDrive(double power, double turn, boolean spin) {
 		if (Math.abs(power) < jitterRange && Math.abs(turn) < jitterRange) {
 			return false;
 		}
+
+		double neg_inertia = turn - old_turn;
+		old_turn = turn;
+
 		double angular_power = 0;
 		double overPower = 0.0;
 		double sensitivity = 1.25;
@@ -105,5 +105,14 @@ public class RobotDrivePlus extends RobotDrive {
 
 	public RobotDrivePlus(int arg0, int arg1, int arg2, int arg3) {
 		super(arg0, arg1, arg2, arg3);
+		old_turn = 0;
+	}
+
+	private double curveInput(double in, int iterations) {
+		if (iterations > 0) {
+			return curveInput(Math.sin(Math.PI*in/2),iterations-1);
+		} else {
+			return in;
+		}
 	}
 }
