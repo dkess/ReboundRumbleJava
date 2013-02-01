@@ -27,7 +27,7 @@ public class RobotTemplate extends IterativeRobot {
 	VictorPair ingest;
 	Victor elevator;
 	VictorPair shooter;
-	RobotDrivePlus robotDrive;
+	Drive robotDrive;
 	JStick xbox;
 	JStick joystick;
 	Compressor compressor;
@@ -53,7 +53,7 @@ public class RobotTemplate extends IterativeRobot {
 
 		shooter = new VictorPair(2,4);
 
-		robotDrive = new RobotDrivePlus(8, 7, 10, 9);
+		robotDrive = new Drive(8, 7, 10, 9);
 		robotDrive.setJitterRange(0.01);
 		robotDrive.setStraightExp(0.8);
 		xbox = new JStick(1,10,6);
@@ -137,7 +137,7 @@ public class RobotTemplate extends IterativeRobot {
 			robotDrive.cheesyDrive(rightStickY, leftStickX, xbox.isPressed(JStick.XBOX_LJ));
 			lcd.println(DriverStationLCD.Line.kUser4,1,"cheesy");
 		} else {
-			if (!robotDrive.straightDrive(xbox.getAxis(JStick.XBOX_TRIG),leftEnc.getRate(),rightEnc.getRate())) {
+			if (!robotDrive.straightDriveEnc(xbox.getAxis(JStick.XBOX_TRIG),leftEnc.getRate(),rightEnc.getRate())) {
 				if(robotDrive.jitTankDrive(leftStickY, rightStickY)) {
 					lcd.println(DriverStationLCD.Line.kUser4,1,"jitTank");
 				} else {
