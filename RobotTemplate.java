@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class RobotTemplate extends IterativeRobot {
+	public static final double jitterRange = 0.006;
+	
 	VictorPair ingest;
 	Victor elevator;
 	VictorPair shooter;
@@ -54,8 +56,6 @@ public class RobotTemplate extends IterativeRobot {
 		shooter = new VictorPair(2,4);
 
 		robotDrive = new Drive(8, 7, 10, 9);
-		robotDrive.setJitterRange(0.01);
-		robotDrive.setStraightExp(0.8);
 		xbox = new JStick(1,10,6);
 		joystick = new JStick(2,11,3);
 		compressor = new Compressor(4, 3);
@@ -129,20 +129,16 @@ public class RobotTemplate extends IterativeRobot {
 			rightEnc.reset();
 		}
 
-		double leftStickX = xbox.getAxis(JStick.XBOX_LSX);
-		double leftStickY = xbox.getAxis(JStick.XBOX_LSY);
-		double rightStickY = xbox.getAxis(JStick.XBOX_RSY);
+		double leftStickX = Drive.removeJitter(xbox.getAxis(JStick.XBOX_LSX), jitterRange);
+		double leftStickY = Drive.removeJitter(xbox.getAxis(JStick.XBOX_LSY), jitterRange);
+		double rightStickY = Drive.removeJitter(xbox.getAxis(JStick.XBOX_RSY), jitterRange);
 
 		if (cheesyDrive) {
 			robotDrive.cheesyDrive(rightStickY, leftStickX, xbox.isPressed(JStick.XBOX_LJ));
 			lcd.println(DriverStationLCD.Line.kUser4,1,"cheesy");
 		} else {
 			if (!robotDrive.straightDriveEnc(xbox.getAxis(JStick.XBOX_TRIG),leftEnc.getRate(),rightEnc.getRate())) {
-				if(robotDrive.jitTankDrive(leftStickY, rightStickY)) {
-					lcd.println(DriverStationLCD.Line.kUser4,1,"jitTank");
-				} else {
-					lcd.println(DriverStationLCD.Line.kUser4,1,"failed tank");
-				}
+				robotDrive.tankDrive(leftStickY, rightStickY);
 				lcd.println(DriverStationLCD.Line.kUser5,1,""+leftStickY);
 				lcd.println(DriverStationLCD.Line.kUser6,1,""+rightStickY);
 			} else {

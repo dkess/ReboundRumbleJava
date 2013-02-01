@@ -5,25 +5,11 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SpeedController;
 
 public class Drive extends RobotDrive {
-	private double jitterRange;
-	public double getJitterRange() {
-		return jitterRange;
-	}
-	public void setJitterRange(double a) {
-		jitterRange = a;
-	}
-
-	private double straightExp;
-	public double getStraightExp() {
-		return straightExp;
-	}
-	public void setStraightExp(double a) {
-		straightExp = a;
-	}
-	
+	// should maintain a constant speed on both sides of the robot
+	// by reading encoder values
 	public boolean straightDriveEnc(double power, double leftRate, double rightRate) {
 		double kp = Preferences.getInstance().getDouble("kp", 0.1);
-		if (Math.abs(power) > jitterRange) {
+		if (power != 0) {
 			double lspeed, rspeed;
 			lspeed = rspeed = 0;
 			
@@ -46,11 +32,14 @@ public class Drive extends RobotDrive {
 	}
 
 	// thanks to team 254 for CheesyDrive
+	// cheesy drive uses one joystick for throttle, and the other for turning
+	// also supports a "quickturn" function that allows the robot to spin
+	// in place
 	double old_turn;
 	double neg_inertia_accumulator;
 	double quickStopAccumulator;
 	public boolean cheesyDrive(double power, double turn, boolean spin) {
-		if (Math.abs(power) < jitterRange && Math.abs(turn) < jitterRange) {
+		if (power == 0) {
 			return false;
 		}
 
@@ -116,15 +105,6 @@ public class Drive extends RobotDrive {
 		tankDrive(lPower, rPower);
 		return true;
 	}
-
-	public boolean jitTankDrive(double leftValue, double rightValue) {
-		if (Math.abs(leftValue) < jitterRange && Math.abs(rightValue) < jitterRange) {
-			return false;
-		}
-		
-		tankDrive(leftValue, rightValue);
-		return true;
-	}
 	
 	public double getLeft() {
 		return (m_frontLeftMotor.get() + m_rearLeftMotor.get())/2;
@@ -152,6 +132,15 @@ public class Drive extends RobotDrive {
 	private double curveInput(double in, int iterations) {
 		if (iterations > 0) {
 			return curveInput(Math.sin(Math.PI*in/2),iterations-1);
+		} else {
+			return in;
+		}
+	}
+	
+	// use removeJitter to get rid of the jitter from joysticks
+	static public double removeJitter(double in, double jitterRange) {
+		if (Math.abs(in) < jitterRange) {
+			return 0;
 		} else {
 			return in;
 		}
