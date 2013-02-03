@@ -112,35 +112,40 @@ public class Drive extends RobotDrive {
 	public double getRight() {
 		return (m_frontRightMotor.get() + m_rearRightMotor.get())/2;
 	}
-
-	public Drive(int arg0, int arg1, int arg2, int arg3) {
-		super(arg0, arg1, arg2, arg3);
+	
+	private void init() {
 		old_turn = 0;
 		neg_inertia_accumulator = 0;
 		quickStopAccumulator = 0;
 	}
-	public Drive(SpeedController frontLeftMotor,
-			SpeedController rearLeftMotor,
-			SpeedController frontRightMotor,
-			SpeedController rearRightMotor) {
-		super(frontLeftMotor,rearLeftMotor,frontRightMotor,rearRightMotor);
-		old_turn = 0;
-		neg_inertia_accumulator = 0;
-		quickStopAccumulator = 0;
+	
+
+
+	public Drive(int frontLeftMotor, int rearLeftMotor, int frontRightMotor,
+			int rearRightMotor) {
+		super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+		init();
+	}
+
+	public Drive(SpeedController frontLeftMotor, SpeedController rearLeftMotor,
+			SpeedController frontRightMotor, SpeedController rearRightMotor) {
+		super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+		init();
+	}
+
+	public Drive(int leftMotorChannel, int rightMotorChannel) {
+		super(leftMotorChannel, rightMotorChannel);
+		init();
+	}
+
+	public Drive(SpeedController leftMotor, SpeedController rightMotor) {
+		super(leftMotor, rightMotor);
+		init();
 	}
 
 	private double curveInput(double in, int iterations) {
 		if (iterations > 0) {
 			return curveInput(Math.sin(Math.PI*in/2),iterations-1);
-		} else {
-			return in;
-		}
-	}
-	
-	// use removeJitter to get rid of the jitter from joysticks
-	static public double removeJitter(double in, double jitterRange) {
-		if (Math.abs(in) < jitterRange) {
-			return 0;
 		} else {
 			return in;
 		}

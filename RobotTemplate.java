@@ -129,9 +129,9 @@ public class RobotTemplate extends IterativeRobot {
 			rightEnc.reset();
 		}
 
-		double leftStickX = Drive.removeJitter(xbox.getAxis(JStick.XBOX_LSX), jitterRange);
-		double leftStickY = Drive.removeJitter(xbox.getAxis(JStick.XBOX_LSY), jitterRange);
-		double rightStickY = Drive.removeJitter(xbox.getAxis(JStick.XBOX_RSY), jitterRange);
+		double leftStickX = JStick.removeJitter(xbox.getAxis(JStick.XBOX_LSX), jitterRange);
+		double leftStickY = JStick.removeJitter(xbox.getAxis(JStick.XBOX_LSY), jitterRange);
+		double rightStickY = JStick.removeJitter(xbox.getAxis(JStick.XBOX_RSY), jitterRange);
 
 		if (cheesyDrive) {
 			robotDrive.cheesyDrive(rightStickY, leftStickX, xbox.isPressed(JStick.XBOX_LJ));

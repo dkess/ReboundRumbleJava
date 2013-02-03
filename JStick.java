@@ -73,4 +73,12 @@ public class JStick {
 			return 0;
 		}
 	}
+	
+	public static double removeJitter(double in, double jitterRange) {
+		if (Math.abs(in) > jitterRange) {
+			return in;
+		} else {
+			return 0;
+		}
+	}
 }
