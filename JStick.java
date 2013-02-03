@@ -26,9 +26,13 @@ public class JStick {
 	public static final int MAX_BUTTONS = 12; // as specified in the docs
 	public static final int MAX_AXES = 6; // as specificed in the docs
 
+	// joystick used internally to get input
 	private Joystick jstick;
+	// array to store the snapshot of buttons pressed
 	private boolean[] buttonPressed;
+	// array to store th snapshot of buttons last pressed
 	private boolean[] buttonLastPressed;
+	
 	private double[] axes;
 
 	public JStick(int port) {
@@ -39,6 +43,9 @@ public class JStick {
 	}
 
 	public void update() {
+		// update the arrays with current joystick inputs
+		// and copy the inputs from the last loop into
+		// buttonLastPressed
 		for(int i = 1; i < buttonPressed.length; ++i) {
 			buttonLastPressed[i] = buttonPressed[i];
 			buttonPressed[i] = jstick.getRawButton(i);
@@ -73,6 +80,8 @@ public class JStick {
 		}
 	}
 	
+	// removeJitter takes an input value. If the value is within the
+	// jitterRange, returns zero. Otherwise, returns the same value.
 	public static double removeJitter(double in, double jitterRange) {
 		if (Math.abs(in) > jitterRange) {
 			return in;

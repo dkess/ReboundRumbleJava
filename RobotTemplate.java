@@ -49,9 +49,9 @@ public class RobotTemplate extends IterativeRobot {
 	boolean cheesyDrive;
 
 	public RobotTemplate() {
+		// initialize all the objects
 		ingest = new VictorPair(5,6);
 		elevator = new Victor(1);
-		//elevatorVictorB = new Victor(2);
 
 		shooter = new VictorPair(2,4);
 
