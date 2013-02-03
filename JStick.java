@@ -22,24 +22,23 @@ public class JStick {
 	public static final int XBOX_DPAD = 6; // buggy
 
 	public static final int JOYSTICK_KNOB = 3;
+	
+	public static final int MAX_BUTTONS = 12; // as specified in the docs
+	public static final int MAX_AXES = 6; // as specificed in the docs
 
 	private Joystick jstick;
 	private boolean[] buttonPressed;
 	private boolean[] buttonLastPressed;
 	private double[] axes;
 
-	public JStick(int port, int maxButtons, int maxAxes) {
+	public JStick(int port) {
 		jstick = new Joystick(port);
-		buttonPressed = new boolean[maxButtons+1];
-		buttonLastPressed = new boolean[maxButtons+1];
-		axes = new double[maxAxes+1];
+		buttonPressed = new boolean[MAX_BUTTONS+1];
+		buttonLastPressed = new boolean[MAX_BUTTONS+1];
+		axes = new double[MAX_AXES+1];
 	}
 
 	public void update() {
-		//buttonLastPressed = buttonPressed.clone();
-		//System.arrayCopy(buttonPressed, 0, buttonPressed, 0, buttonPressed.length);
-		//buttonLastPressed = Arrays.copyOf(buttonPressed, buttonPressed.length);
-
 		for(int i = 1; i < buttonPressed.length; ++i) {
 			buttonLastPressed[i] = buttonPressed[i];
 			buttonPressed[i] = jstick.getRawButton(i);

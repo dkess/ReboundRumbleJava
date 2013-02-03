@@ -56,8 +56,8 @@ public class RobotTemplate extends IterativeRobot {
 		shooter = new VictorPair(2,4);
 
 		robotDrive = new Drive(8, 7, 10, 9);
-		xbox = new JStick(1,10,6);
-		joystick = new JStick(2,11,3);
+		xbox = new JStick(1);
+		joystick = new JStick(2);
 		compressor = new Compressor(4, 3);
 		compressor.start();
 
